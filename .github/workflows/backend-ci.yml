@@ -55,3 +55,19 @@ jobs:
       - name: Run tests
         working-directory: starter/backend
         run: pytest -v
+
+  build:
+    name: Backend Build
+    needs:
+      - lint
+      - test
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: starter/backend
+        run: docker build .

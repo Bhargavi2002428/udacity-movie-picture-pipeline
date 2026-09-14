@@ -10,8 +10,62 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint:
+    name: Frontend Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        working-directory: starter/frontend
+        run: npm ci
+
+      - name: Validate npm cache
+        working-directory: starter/frontend
+        run: npm cache verify
+
+      - name: Run lint
+        working-directory: starter/frontend
+        run: npm run lint
+
+  test:
+    name: Frontend Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        working-directory: starter/frontend
+        run: npm ci
+
+      - name: Validate npm cache
+        working-directory: starter/frontend
+        run: npm cache verify
+
+      - name: Run tests
+        working-directory: starter/frontend
+        run: CI=true npm test
+
   build:
     name: Build and Deploy Frontend
+    needs:
+      - lint
+      - test
+
     runs-on: ubuntu-latest
 
     env:
