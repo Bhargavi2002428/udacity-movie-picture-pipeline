@@ -91,7 +91,7 @@ jobs:
         working-directory: starter/frontend
         run: |
           docker build \
-            --build-arg REACT_APP_MOVIE_API_URL=http://ab7e9098c454742a9935a5087ca2f018-1451591437.us-east-1.elb.amazonaws.com \
+            --build-arg REACT_APP_MOVIE_API_URL=http://ae4e1afda28504b37a091c3115f35cbd-578127069.us-east-1.elb.amazonaws.com \
             --tag $ECR_REPOSITORY:${{ github.sha }} \
             .
 
