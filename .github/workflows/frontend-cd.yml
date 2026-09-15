@@ -61,7 +61,7 @@ jobs:
         run: CI=true npm test
 
   build:
-    name: Build and Deploy Frontend
+    name: Frontend Build
     needs:
       - lint
       - test
@@ -71,7 +71,6 @@ jobs:
     env:
       AWS_REGION: us-east-1
       ECR_REPOSITORY: 814945016581.dkr.ecr.us-east-1.amazonaws.com/frontend
-      EKS_CLUSTER_NAME: cluster
 
     steps:
       - name: Checkout code
@@ -99,6 +98,30 @@ jobs:
       - name: Push Docker image
         run: |
           docker push $ECR_REPOSITORY:${{ github.sha }}
+
+  deploy:
+    name: Frontend Deploy
+    needs:
+      - build
+
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      ECR_REPOSITORY: 814945016581.dkr.ecr.us-east-1.amazonaws.com/frontend
+      EKS_CLUSTER_NAME: cluster
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
