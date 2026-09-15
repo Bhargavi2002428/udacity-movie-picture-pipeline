@@ -66,7 +66,7 @@ jobs:
 
     env:
       AWS_REGION: us-east-1
-      ECR_REPOSITORY: 814945016581.dkr.ecr.us-east-1.amazonaws.com/backend
+      ECR_REPOSITORY: 366118863873.dkr.ecr.us-east-1.amazonaws.com/backend
       EKS_CLUSTER_NAME: cluster
 
     steps:
