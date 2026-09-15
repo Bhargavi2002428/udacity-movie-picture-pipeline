@@ -13,7 +13,6 @@ jobs:
   lint:
     name: Backend Lint
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,7 +35,6 @@ jobs:
   test:
     name: Backend Test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -57,18 +55,14 @@ jobs:
         run: pytest -v
 
   build:
-    name: Build and Deploy Backend
+    name: Backend Build
     needs:
       - lint
       - test
-
     runs-on: ubuntu-latest
-
     env:
       AWS_REGION: us-east-1
       ECR_REPOSITORY: 366118863873.dkr.ecr.us-east-1.amazonaws.com/backend
-      EKS_CLUSTER_NAME: cluster
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -87,13 +81,32 @@ jobs:
       - name: Build Docker image
         working-directory: starter/backend
         run: |
-          docker build \
-            --tag $ECR_REPOSITORY:${{ github.sha }} \
-            .
+          docker build             --tag $ECR_REPOSITORY:${{ github.sha }}             .
 
       - name: Push Docker image
         run: |
           docker push $ECR_REPOSITORY:${{ github.sha }}
+
+  deploy:
+    name: Backend Deploy
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      ECR_REPOSITORY: 366118863873.dkr.ecr.us-east-1.amazonaws.com/backend
+      EKS_CLUSTER_NAME: cluster
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
@@ -105,9 +118,7 @@ jobs:
 
       - name: Configure kubectl for EKS
         run: |
-          aws eks update-kubeconfig \
-            --region $AWS_REGION \
-            --name $EKS_CLUSTER_NAME
+          aws eks update-kubeconfig             --region $AWS_REGION             --name $EKS_CLUSTER_NAME
 
       - name: Deploy backend to Kubernetes
         working-directory: starter/backend/k8s
